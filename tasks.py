@@ -1,44 +1,47 @@
-# 1. Запишите в файл формата CSV следующую информацию из JSON-файла `Amsterdam24.09.06.json`: 
-# Как ощущается температуру _(feels_like)_ и какие погодные условия _(condition)_ в Амстердаме по часам?
-
-# 2. Запишите в файл формата TXT следующую информацию из JSON-файла `Berlin24.09.06.json`: 
-# Какая средняя, максимальная и минимальные температуры _(temp_avg, temp_max, temp_min)_ утром, днем, вечером, ночью в Берлине?
-
-# 3. Запишите в файл формата TXT следующую информацию из JSON-файла `Moscow24.09.06.json`: 
-# Какое фактическое состояние погоды _(fact)_ в Москве 07.09.2024?
-
-# 4. Запишите в файл формата CSV следующую информацию из JSON-файла `Rome24.09.06.json`: 
-# Таблица дат _(date)_, время восхода солнца _(sunrise)_ и заката _(sunset)_ в Риме.
-
 # 5. Запишите в файл формата CSV следующую информацию из JSON-файла `Saint-Petersburg24.09.06.json`: 
 # Какие погодные условия и атмосферное давление _(pressure_mm)_ по часам в Санкт-Петербурге 08.09.2024
 
-# 6. Запишите в файл формата TXT следующую информацию из JSON-файла `Sochi24.09.06.json`: 
-# Какие направления ветра _(wind_dir)_ встречались в данных о погоде в Сочи? Посчитайте количество каждого типа.
 
-# 7. Запишите в файл формата TXT следующую информацию из JSON-файла `events.json`: 
-# Какого формата мероприятия были запланированы? Посчитайте количество каждого типа.
+import json
+import csv
+import os
 
-# 8. Запишите в файл формата CSV следующую информацию из JSON-файла `events.json`: 
-# Таблица ссылок на стажировки _(link)_ и названий компаний _(company)_.
+def process_weather_file(input_file, output_dir, target_date):
+    
+    # Проверяем наличие каталога для сохранения результата
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Читаем данные из JSON-файла
+    with open(input_file, 'r', encoding='utf-8') as file:
+        data = json.load(file)
 
-# 9. Запишите в файл формата TXT следующую информацию из CSV-файла `sales2019.csv`: 
-# Посчитайте сумму прибыли _(sale_profit)_ за 2019 год.
+    # Подготовка данных для записи
+    output_data = [["Hour", "Condition", "Pressure (mm)"]]
+    for forecast in data.get("forecasts", []):
+        if forecast.get("date") == target_date:
+            for hour_data in forecast.get("hours", []):
+                output_data.append([
+                    hour_data.get("hour"),
+                    hour_data.get("condition"),
+                    hour_data.get("pressure_mm")
+                ])
+            break
 
-# 10. Запишите в файл формата JSON следующую информацию из CSV-файла `crypto_intraday_5min_ETH_USD.csv`: 
-# Посчитайте за каждый час _(open)_ суммарное количество торгуемых токенов _(volume)_ на бирже.
+    # Создаем путь для сохранения CSV-файла
+    output_file = os.path.join(output_dir, f"Weather_{target_date.replace('-', '_')}.csv")
+    
+    # Записываем данные в CSV
+    with open(output_file, 'w', newline='', encoding='utf-8') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(output_data)
+    
+    return output_file
 
-# 11. Запишите в файл формата JSON следующую информацию из CSV-файла `fx_daily_EUR_USD.csv`: 
-# Посчитайте за каждый месяц среднюю цену закрытия валютных торгов _(close)_.
+# вызов функции
+input_path = 'data/Saint-Petersburg24.09.06.json'  
+output_path = 'data/'                              
+date = '2024-09-08'                               
 
-# 12. Запишите в файл формата TXT следующую информацию из CSV-файла `fx_weekly_EUR_USD.csv`: 
-# Посчитайте за каждый год максимальную цену открытия и максимальную цену закрытия валютных торгов
-
-# 13. Запишите в файл формата TXT следующую информацию из CSV-файла `weekly_IBM.csv`: 
-# Посчитайте количество строк в таблице.
-
-# 14. Запишите в файл формата JSON следующую информацию из YAML-файла `mkdocs.yml`: 
-# Найдите информацию о ссылках на социальные сети в блоке `social`.
-
-# 15. Запишите в файл формата CSV следующую информацию из YAML-файла `gitlab-ci.yml`: 
-# Посчитайте количество состояний `stage` каждого типа, которые встречаются в файле.
+result_file = process_weather_file(input_path, output_path, date)
+print(f"Результат сохранен в файл: {result_file}")
